@@ -1,0 +1,161 @@
+Create table "Client"
+(
+	"Id" uuid PRIMARY KEY,
+	"FirstName" varchar(20) not null,
+	"LastName" varchar(20) not null,
+	"Phone" varchar(20) not null,
+	"Email" varchar(20)
+);
+
+Create table "Salon"
+(
+	"Id" uuid PRIMARY KEY,
+	"Name" varchar(20) not null,
+	"Email" varchar(20) not null
+);
+
+Create table "ClientSalon"
+(
+	"Id" uuid PRIMARY KEY,
+	"ClientId" uuid,
+	"SalonId" uuid,
+	constraint "FK_ClientSalon_Client_ClientId"
+	foreign key("ClientId")
+	references "Client"("Id"),
+	
+	constraint "FK_ClientSalon_Salon_SalonId"
+	foreign key("SalonId")
+	references "Salon"("Id")
+);
+
+Create table "Service"
+(
+	"Id" uuid PRIMARY KEY,
+	"Name" varchar(20) not null,
+	"Price" decimal not null
+);
+
+Create table "ClientService"
+(
+	"Id" uuid PRIMARY KEY,
+	"ClientId" uuid,
+	"ServiceId" uuid,
+	constraint "FK_ClientService_Client_ClientId"
+	foreign key("ClientId")
+	references "Client"("Id"),
+
+	constraint "FK_ClientService_Service_ServiceId" 
+	foreign key("ServiceId") 
+	references "Service"("Id")
+);
+
+Create table "Worker"
+(
+	"Id" uuid PRIMARY KEY,
+	"FirstName" varchar(20) not null,
+	"LastName" varchar(20) not null,
+	"Phone" varchar(20) not null,
+	"Email" varchar(20),
+	"SalonId" uuid,
+	constraint "FK_Worker_Salon_SalonId"
+	foreign key("SalonId")
+	references "Salon"("Id")
+);
+
+Create table "WorkerService"
+(
+	"Id" uuid PRIMARY KEY,
+	"ServiceId" uuid,
+	"WorkerId" uuid,
+	constraint "FK_WorkerService_Service_ServiceId"
+	foreign key("ServiceId")
+	references "Service"("Id"),
+
+	constraint "FK_WorkerService_Worker_WorkerId"
+	foreign key("WorkerId")
+	references "Worker"("Id")
+);
+
+Create table "Appointment"
+(
+	"Id" uuid PRIMARY KEY,
+	"Started_At" date not null,
+	"Duration" timestamp not null,
+	"ClientId" uuid,
+	"WorkerServiceId" uuid,
+	constraint "FK_Appointment_Client_ClientId"
+	foreign key("ClientId")
+	references "Client"("Id"),
+
+	constraint "FK_Appointment_WorkerService_WorkerServiceId"
+	foreign key("WorkerServiceId")
+	references "WorkerService"("Id")
+);
+
+select * from "Service"
+
+
+INSERT INTO "Client"("Id", "FirstName", "LastName", "Phone", "Email")
+VALUES (gen_random_uuid(), 'Iva', 'Ivić', '098548123', 'iva.ivic@mail.com');
+INSERT INTO "Client"("Id", "FirstName", "LastName", "Phone", "Email")
+VALUES (gen_random_uuid(), 'Marko', 'Marić', '098548321', 'marko.maric@mail.com');
+INSERT INTO "Client"("Id", "FirstName", "LastName", "Phone", "Email")
+VALUES (gen_random_uuid(), 'Pero', 'Perić', '098548213', 'pero.peric@mail.com');
+
+
+INSERT INTO "Salon"("Id", "Name", "Email")
+VALUES (gen_random_uuid(), 'BeautySalon','beautySalon@mail.com');
+INSERT INTO "Salon"("Id", "Name", "Email")
+VALUES (gen_random_uuid(), 'BeautySalonS','beautySalonS@mail.com');
+INSERT INTO "Salon"("Id", "Name", "Email")
+VALUES (gen_random_uuid(), 'BeautySalonM','beautySalonM@mail.com');
+
+ALTER TABLE "Salon"
+ALTER COLUMN "Email" 
+TYPE varchar(30);
+
+INSERT INTO "ClientSalon"("Id", "ClientId", "SalonId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Client" WHERE "FirstName" = 'Iva' ), (SELECT "Id" FROM "Salon" WHERE "Name" = 'BeautySalon'));
+INSERT INTO "ClientSalon"("Id", "ClientId", "SalonId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Client" WHERE "FirstName" = 'Marko' ), (SELECT "Id" FROM "Salon" WHERE "Name" = 'BeautySalonS'));
+INSERT INTO "ClientSalon"("Id", "ClientId", "SalonId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Client" WHERE "FirstName" = 'Pero' ), (SELECT "Id" FROM "Salon" WHERE "Name" = 'BeautySalonM'));
+
+
+INSERT INTO "Service"("Id", "Name", "Price")
+VALUES (gen_random_uuid(), 'Haircut', 10.00);
+INSERT INTO "Service"("Id", "Name", "Price")
+VALUES (gen_random_uuid(), 'Gel nails', 20.00);
+INSERT INTO "Service"("Id", "Name", "Price")
+VALUES (gen_random_uuid(), 'Wedding makeup', 40.00);
+
+DELETE FROM "Service";
+
+INSERT INTO "ClientService"("Id", "ClientId", "ServiceId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Client" WHERE "FirstName" = 'Iva' ), (SELECT "Id" FROM "Service" WHERE "Name" = 'Haircut'));
+INSERT INTO "ClientSalon"("Id", "ClientId", "SalonId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Client" WHERE "FirstName" = 'Marko' ), (SELECT "Id" FROM "Salon" WHERE "Name" = 'Gel nails'));
+INSERT INTO "ClientSalon"("Id", "ClientId", "SalonId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Client" WHERE "FirstName" = 'Pero' ), (SELECT "Id" FROM "Salon" WHERE "Name" = 'Wedding makeup'));
+
+
+INSERT INTO "Worker"("Id", "FirstName", "LastName", "Phone", "Email", "SalonId")
+VALUES (gen_random_uuid(), 'Ivica', 'Ivićić', '098545123', 'ivica.ivicic@mail.com', (SELECT "Id" FROM "Salon" WHERE "Name" = 'BeautySalon' ));
+INSERT INTO "Worker"("Id", "FirstName", "LastName", "Phone", "Email", "SalonId")
+VALUES (gen_random_uuid(), 'Markica', 'Maričić', '098548334', 'markica.maricic@mail.com', (SELECT "Id" FROM "Salon" WHERE "Name" = 'BeautySalonS' ));
+INSERT INTO "Worker"("Id", "FirstName", "LastName", "Phone", "Email", "SalonId")
+VALUES (gen_random_uuid(), 'Perica', 'Peričić', '098542213', 'perica.pericic@mail.com', (SELECT "Id" FROM "Salon" WHERE "Name" = 'BeautySalonM' ));
+
+ALTER TABLE "Worker"
+ALTER COLUMN "Email" 
+TYPE varchar(30);
+
+INSERT INTO "WorkerService"("Id", "ServiceId", "WorkerId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Service" WHERE "Name" = 'Haircut' ), (SELECT "Id" FROM "Worker" WHERE "FirstName" = 'Ivica'));
+INSERT INTO "WorkerService"("Id", "ServiceId", "WorkerId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Service" WHERE "Name" = 'Gel nails' ), (SELECT "Id" FROM "Worker" WHERE "FirstName" = 'Markica'));
+INSERT INTO "WorkerService"("Id", "ServiceId", "WorkerId")
+VALUES (gen_random_uuid(), (SELECT "Id" FROM "Service" WHERE "Name" = 'Wedding makeup' ), (SELECT "Id" FROM "Worker" WHERE "FirstName" = 'Perica'));
+
+INSERT INTO "Appointment"("Id", "Started_At", "Duration", "ClientId", "WorkerServiceId")
+VALUES (gen_random_uuid(), 1/8/1999, 1999-01-08 04:05:06,(SELECT "Id" FROM "Client" WHERE "Name" = 'Iva' ), (SELECT "Id" FROM "WorkerService" WHERE "Name" = 'Iva' ));
